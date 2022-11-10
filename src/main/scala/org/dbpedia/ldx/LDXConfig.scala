@@ -14,8 +14,4 @@ object LDXConfig {
       "application/trig,application/n-quads;q=0.9," +
       "application/ld+json;q=0.8," +
       "*/*;q=0.5"
-
-  val mimeTypeFormatMap = HashMap(
-    "application/n-triples"
-  )
 }

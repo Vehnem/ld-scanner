@@ -16,8 +16,8 @@
         <spring.version>5.3.22.</spring.version>
         <spring.boot.version>2.7.4</spring.boot.version>
         <springfox.version>3.0.0</springfox.version>
-        <apache.jena>4.6.0</apache.jena>
-        <vaadin.version>14.8.19</vaadin.version>
+        <apache.jena.version>4.6.0</apache.jena.version>
+        <slf4j.version>2.0.3</slf4j.version>
     </properties>
 
     <dependencies>
@@ -34,6 +34,17 @@
             <artifactId>scalatest_${scala.major.version}</artifactId>
             <version>3.2.14</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
 
         <!-- === HTML === -->
@@ -87,47 +98,34 @@
                     <scalaVersion>${scala.version}</scalaVersion>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.openapitools</groupId>-->
-<!--                <artifactId>openapi-generator-maven-plugin</artifactId>-->
-<!--                <version>6.0.1</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>generate</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <inputSpec>-->
-<!--                                ${project.basedir}/src/main/resources/openapi.yml-->
-<!--                            </inputSpec>-->
-<!--                            <generatorName>spring</generatorName>-->
-<!--                            <apiPackage>ldretrieve.api</apiPackage>-->
-<!--                            <modelPackage>ldretrieve.model</modelPackage>-->
-<!--                            <supportingFilesToGenerate>-->
-<!--                                ApiUtil.java-->
-<!--                            </supportingFilesToGenerate>-->
-<!--                            <configOptions>-->
-<!--                                <sourceFolder>src/main/java/</sourceFolder>-->
-<!--                                <delegatePattern>true</delegatePattern>-->
-<!--                                <interfaceOnly>true</interfaceOnly>-->
-<!--                                &lt;!&ndash;                                <useOptional>true</useOptional>&ndash;&gt;-->
-<!--                            </configOptions>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-            <!--            <plugin>-->
-            <!--                <groupId>com.vaadin</groupId>-->
-            <!--                <artifactId>vaadin-maven-plugin</artifactId>-->
-            <!--                <version>${vaadin.version}</version>-->
-            <!--                <executions>-->
-            <!--                    <execution>-->
-            <!--                        <goals>-->
-            <!--                            <goal>prepare-frontend</goal>-->
-            <!--                        </goals>-->
-            <!--                    </execution>-->
-            <!--                </executions>-->
-            <!--            </plugin>-->
+            <!-- disable surefire -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+            <!-- enable scalatest -->
+            <plugin>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest-maven-plugin</artifactId>
+                <version>2.2.0</version>
+                <configuration>
+                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                    <junitxml>.</junitxml>
+                    <filereports>WDF TestSuite.txt</filereports>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -159,33 +157,34 @@
                             </filters>
                             <transformers>
                                 <!-- add Main-Class to manifest file -->
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>org.dbpedia.ldx.cli.LDX</mainClass>
                                 </transformer>
                                 <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
-	<extensions>
-         <extension>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-webdav-jackrabbit</artifactId>
-            <version>3.0.0</version>
-         </extension>
-      </extensions>    
-</build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-webdav-jackrabbit</artifactId>
+                <version>3.0.0</version>
+            </extension>
+        </extensions>
+    </build>
 
-  <distributionManagement>
-    <repository>
-      <id>akswnc7</id>
-      <name>DBpedia Internal Development Repository</name>
-      <url>dav:http://akswnc7.informatik.uni-leipzig.de/dav/mavenrepository/</url>
-      <uniqueVersion>false</uniqueVersion>    
-    </repository>
-  </distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>akswnc7</id>
+            <name>DBpedia Internal Development Repository</name>
+            <url>dav:http://akswnc7.informatik.uni-leipzig.de/dav/mavenrepository/</url>
+            <uniqueVersion>false</uniqueVersion>
+        </repository>
+    </distributionManagement>
 
 </project>

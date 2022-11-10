@@ -2,6 +2,9 @@ package org.dbpedia.ldx.io
 
 import org.apache.jena.riot.Lang
 
+import scala.collection.immutable.HashMap
+import scala.collection.mutable
+
 
 
 sealed trait Format {
@@ -33,12 +36,21 @@ case class RDF_NQUADS() extends Format {
   override val mediaType: String = "application/n-quads"
   override val jenaLang: Lang = Lang.NQUADS
 }
-object Format {
-  def getFormatByMimeType(mimeType: String): Option[Format] = {
-    val formats = List(RDF_XML(), RDF_NTRIPLES(), RDF_NQUADS(), RDF_JSONLD(), RDF_TURTLE())
 
-    formats.find(format => format.mediaType == mimeType)
-  }
+case class RDF_TRIG() extends Format {
+  override val mediaType: String = "application/trig"
+  override val jenaLang: Lang = Lang.TRIG
+}
+object Format {
+
+  val rdfMimeTypes: HashMap[String, Format] = HashMap(
+    "application/n-triples" -> RDF_NTRIPLES(),
+    "text/turtle" -> RDF_TURTLE(),
+    "application/rdf+xml" -> RDF_XML(),
+    "application/n-quads" -> RDF_NQUADS(),
+    "application/trig" -> RDF_TRIG(),
+    "application/ld+json" -> RDF_JSONLD()
+  )
 }
 
 final case class UnknownFormatException(private val message: String) extends Exception(message)

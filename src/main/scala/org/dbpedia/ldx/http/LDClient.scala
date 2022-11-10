@@ -20,8 +20,8 @@ class LDClient {
       .version(HttpClient.Version.HTTP_1_1)
       .build()
 
-  def send(uri: URI): Try[LDResponse] = Try {
-
+  def send(uri_str: String): Try[LDResponse] = Try {
+    val uri = new URI(uri_str)
     var location = uri
     var httpResponse: HttpResponse[InputStream] = null
     var continue = true

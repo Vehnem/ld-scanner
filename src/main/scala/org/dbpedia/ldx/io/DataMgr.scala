@@ -2,6 +2,7 @@ package org.dbpedia.ldx.io
 
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.dbpedia.ldx.LDXConfig
 import org.jsoup.Jsoup
 import ujson.Value
 
@@ -9,25 +10,22 @@ import java.io.{File, FileInputStream, InputStream, StringReader}
 import scala.collection.JavaConverters._
 import org.dbpedia.ldx.http.LDClient
 
-import java.net.URI
 import scala.util.{Failure, Success, Try}
 
-class DataMgr {
+object DataMgr {
 
   def fetch(uri: String): Try[Model] = {
 
     val client = new LDClient()
-
-    val ldResponse = client.send(new URI(uri))
+    val ldResponse = client.send(uri)
 
     ldResponse match {
       case Success(ld_resp) =>
         val contentType = ld_resp.finalHttpResponse.headers().allValues("content-type").asScala.head
         val mimeType = contentType.split(";").head.trim
-        val formatOption = Format.getFormatByMimeType(mimeType)
-        formatOption match {
+        Format.rdfMimeTypes.get(mimeType) match {
           case Some(format) => parse(ld_resp.finalHttpResponse.body(), format)
-          case None => Failure(UnknownFormatException(s"Could not determine format for mime-type ${mimeType}"))
+          case None => parseEmbedded(ld_resp.finalHttpResponse.body(), uri)
         }
       case Failure(exception) => Failure(exception)
     }
@@ -38,7 +36,7 @@ class DataMgr {
     parse(fis, format)
   }
 
-  def parseEmbedded(inputStream: InputStream, baseUri: String): Model = {
+  def parseEmbedded(inputStream: InputStream, baseUri: String): Try[Model] = Try {
     val document = Jsoup.parse(inputStream, null, "")
     val m = ModelFactory.createDefaultModel()
     document.select("script[type=application/ld+json]").iterator().asScala.foreach({
@@ -55,7 +53,7 @@ class DataMgr {
         }
         val dataWithBase =
           data.render().replaceFirst("\\{\"type", "{\"@base\": \"" + baseUri + "\", \"type")
-        println(dataWithBase)
+        //println(dataWithBase)
         RDFDataMgr.read(m, new StringReader(dataWithBase), baseUri, Lang.JSONLD)
     })
     m
