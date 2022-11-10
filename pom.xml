@@ -137,6 +137,22 @@
                 </configuration>
             </plugin>
         </plugins>
-    </build>
+	<extensions>
+         <extension>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-webdav-jackrabbit</artifactId>
+            <version>3.0.0</version>
+         </extension>
+      </extensions>    
+</build>
+
+  <distributionManagement>
+    <repository>
+      <id>akswnc7</id>
+      <name>DBpedia Internal Development Repository</name>
+      <url>dav:http://akswnc7.informatik.uni-leipzig.de/dav/mavenrepository/</url>
+      <uniqueVersion>false</uniqueVersion>    
+    </repository>
+  </distributionManagement>
 
 </project>
