@@ -5,37 +5,38 @@ import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.jsoup.Jsoup
 import ujson.Value
 
-import java.io.{InputStream, StringReader}
+import java.io.{File, FileInputStream, InputStream, StringReader}
 import scala.collection.JavaConverters._
+import org.dbpedia.ldx.http.LDClient
+
+import java.net.URI
+import scala.util.{Failure, Success, Try}
 
 class DataMgr {
 
-  //  def fetch(uri: String): Model = {
-  //
-  //    val client = HttpClient.newBuilder()
-  //      .version(Version.HTTP_1_1)
-  //      .followRedirects(Redirect.ALWAYS)
-  //      .build()
-  //
-  //    val request = HttpRequest.newBuilder()
-  //      .uri(new URI(uri))
-  //      .GET()
-  //      .header("Accept", config.ldAcceptHeader)
-  //      .timeout(Duration.ofSeconds(30))
-  //      .build()
-  //
-  //    val response_raw = client.send(request, BodyHandlers.ofInputStream())
-  //    val contentType = response_raw.headers().allValues("content-type").asScala.head
-  //    val mimeTypeWoParam = contentType.split(";").head
-  //
-  //    if (config.rdfMimeTypes.contains(mimeTypeWoParam)) {
-  //      // RDF format
-  //      parse(response_raw.body(), config.langByMimeType(mimeTypeWoParam))
-  //    } else {
-  //      // MicroData and JSON+LD
-  //      parseEmbedded(response_raw.body(), uri)
-  //    }
-  //  }
+  def fetch(uri: String): Try[Model] = {
+
+    val client = new LDClient()
+
+    val ldResponse = client.send(new URI(uri))
+
+    ldResponse match {
+      case Success(ld_resp) =>
+        val contentType = ld_resp.finalHttpResponse.headers().allValues("content-type").asScala.head
+        val mimeType = contentType.split(";").head.trim
+        val formatOption = Format.getFormatByMimeType(mimeType)
+        formatOption match {
+          case Some(format) => parse(ld_resp.finalHttpResponse.body(), format)
+          case None => Failure(UnknownFormatException(s"Could not determine format for mime-type ${mimeType}"))
+        }
+      case Failure(exception) => Failure(exception)
+    }
+  }
+
+  def load(file: File, format: Format): Try[Model] = {
+    val fis = new FileInputStream(file)
+    parse(fis, format)
+  }
 
   def parseEmbedded(inputStream: InputStream, baseUri: String): Model = {
     val document = Jsoup.parse(inputStream, null, "")
@@ -60,9 +61,9 @@ class DataMgr {
     m
   }
 
-  def parse(inputStream: InputStream, lang: Lang): Model = {
+  def parse(inputStream: InputStream, format: Format): Try[Model] = Try {
     val m = ModelFactory.createDefaultModel()
-    RDFDataMgr.read(m, inputStream, lang)
+    RDFDataMgr.read(m, inputStream, format.jenaLang)
     m
   }
 }
