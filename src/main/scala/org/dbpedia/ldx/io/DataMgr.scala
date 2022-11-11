@@ -23,7 +23,7 @@ object DataMgr {
       case Success(ld_resp) =>
         val contentType = ld_resp.finalHttpResponse.headers().allValues("content-type").asScala.head
         val mimeType = contentType.split(";").head.trim
-        Format.rdfMimeTypes.get(mimeType) match {
+        Format.mimetoFormat.get(mimeType) match {
           case Some(format) => parse(ld_resp.finalHttpResponse.body(), format)
           case None => parseEmbedded(ld_resp.finalHttpResponse.body(), uri)
         }
