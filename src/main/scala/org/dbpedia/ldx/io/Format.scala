@@ -58,17 +58,18 @@ object Format {
   lazy val formatNameToFormat: Map[String, Format] = getAllImplementationsOfSymbol[Format].map(
     format => (format.name, format)
   ).toMap
-  private def getAllImplementationsOfSymbol[T]: Set[T] = {
+
+  private def getAllImplementationsOfSymbol[T: ru.TypeTag]: Set[T] = {
+
     val subclassesOfTrait = ru.typeOf[T].typeSymbol.asClass.knownDirectSubclasses
-    subclassesOfTrait.map(subclass => getInstanceOfType(subclass).asInstanceOf[T])
+    subclassesOfTrait.map(subclass => getInstanceOfClassSymbol(subclass.asClass).asInstanceOf[T])
   }
 
-  private def getInstanceOfType(tp: ru.Symbol): Any = {
+  private def getInstanceOfClassSymbol(classSymbol: ru.ClassSymbol): Any = {
     val mirror = ru.runtimeMirror(getClass.getClassLoader)
-    val classSymbol = tp.asClass
-    val classType = classSymbol.info
+    val tpe = classSymbol.info
     val classMirror = mirror.reflectClass(classSymbol)
-    val constructorMirror = classMirror.reflectConstructor(classType.decl(ru.termNames.CONSTRUCTOR).asMethod)
+    val constructorMirror = classMirror.reflectConstructor(tpe.decl(ru.termNames.CONSTRUCTOR).asMethod)
 
     constructorMirror()
   }
