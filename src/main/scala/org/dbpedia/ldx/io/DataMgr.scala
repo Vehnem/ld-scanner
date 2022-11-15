@@ -10,6 +10,7 @@ import java.io.{File, FileInputStream, InputStream, StringReader}
 import scala.collection.JavaConverters._
 import org.dbpedia.ldx.http.LDClient
 
+import java.io.OutputStream
 import scala.util.{Failure, Success, Try}
 
 object DataMgr {
@@ -63,5 +64,9 @@ object DataMgr {
     val m = ModelFactory.createDefaultModel()
     RDFDataMgr.read(m, inputStream, format.jenaLang)
     m
+  }
+
+  def write(model: Model, os: OutputStream, format: Format): Unit = {
+    RDFDataMgr.write(os, model, format.jenaLang)
   }
 }
