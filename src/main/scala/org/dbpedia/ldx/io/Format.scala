@@ -12,6 +12,7 @@ sealed trait Format {
   val jenaLang: Lang
   val name: String
 }
+
 case class RDF_NTRIPLES() extends Format {
   override val mediaType: String = "application/n-triples"
   override val jenaLang: Lang = Lang.NTRIPLES
@@ -47,6 +48,7 @@ case class RDF_TRIG() extends Format {
   override val jenaLang: Lang = Lang.TRIG
   override val name: String = "trig"
 }
+
 object Format {
 
   import scala.reflect.runtime.{universe => ru}
